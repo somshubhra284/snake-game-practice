@@ -361,15 +361,6 @@ class Game:
 
         pygame.display.flip()
 
-    def render(self):
-        grid = [['O'] * COLS for _ in range(ROWS)]
-        grid[self.apple.position[1]][self.apple.position[0]] = '*'
-        for c, r in self.snake.body:
-            grid[r][c] = '#'
-        border = '+' + '-' * COLS + '+'
-        rows = '\n'.join('|' + ''.join(row) + '|' for row in grid)
-        print(f"{border}\n{rows}\n{border}\nScore: {self.score}")
-
     def run(self):
         while True:
             dt = self.clock.tick(RENDER_FPS) / 1000.0

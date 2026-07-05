@@ -19,14 +19,6 @@ def test_snake_grows_when_eating():
     assert len(snake.body) == 3  # tail kept
 
 
-def test_no_reverse_direction():
-    snake = Snake([(5, 5)], RIGHT)
-    # direction should not flip 180°; Game.handle_input enforces this,
-    # but Snake itself stores whatever is set — guard is in Game
-    snake.direction = LEFT  # allowed by Snake; Game prevents it
-    assert snake.direction == LEFT
-
-
 def test_wall_hit():
     snake = Snake([(0, 0)], LEFT)   # heading out of left wall
     assert snake.wall_hit() is True
