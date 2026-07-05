@@ -4,6 +4,7 @@ WIDTH, HEIGHT, CELL = 600, 600, 20
 BASE_FPS, FPS_STEP, MAX_FPS = 6, 2, 20  # level-up every 5 apples
 COLS, ROWS = WIDTH // CELL, HEIGHT // CELL
 BLACK, WHITE, GREEN, RED, GRAY = (0,0,0), (255,255,255), (50,200,50), (220,50,50), (40,40,40)
+DARK_GREEN = (30, 140, 30)
 UP, DOWN, LEFT, RIGHT = (0,-1), (0,1), (-1,0), (1,0)
 
 
@@ -31,12 +32,34 @@ class Snake:
     def self_hit(self):
         return self.next_head() in self.body
 
-    def draw(self, surface):
+    def draw(self, surface, eating=False):
         for i, (c, r) in enumerate(self.body):
-            pygame.draw.rect(surface, GREEN, (c*CELL, r*CELL, CELL, CELL))
-            if i == 0:
-                inner = pygame.Rect(c*CELL+3, r*CELL+3, CELL-6, CELL-6)
-                pygame.draw.rect(surface, (0,120,0), inner, border_radius=3)
+            cx, cy = c * CELL + CELL // 2, r * CELL + CELL // 2
+            rad = CELL // 2 - 1
+            pygame.draw.circle(surface, DARK_GREEN, (cx, cy), rad + 2)
+            pygame.draw.circle(surface, GREEN, (cx, cy), rad)
+
+        # head details
+        hc, hr = self.body[0]
+        cx, cy = hc * CELL + CELL // 2, hr * CELL + CELL // 2
+        dx, dy = self.direction
+
+        # eyes (offset perpendicular to direction)
+        perp = (-dy, dx)
+        for side in (1, -1):
+            ex = cx + dx * 3 + perp[0] * 4 * side
+            ey = cy + dy * 3 + perp[1] * 4 * side
+            pygame.draw.circle(surface, WHITE, (int(ex), int(ey)), 3)
+            pygame.draw.circle(surface, BLACK, (int(ex + dx), int(ey + dy)), 1)
+
+        # tongue (flicks when eating)
+        if eating:
+            tx, ty = cx + dx * (rad + 2), cy + dy * (rad + 2)
+            tip1 = (tx + dx * 5 - dy * 3, ty + dy * 5 + dx * 3)
+            tip2 = (tx + dx * 5 + dy * 3, ty + dy * 5 - dx * 3)
+            pygame.draw.line(surface, RED, (cx + dx * rad, cy + dy * rad), (int(tx), int(ty)), 2)
+            pygame.draw.line(surface, RED, (int(tx), int(ty)), (int(tip1[0]), int(tip1[1])), 2)
+            pygame.draw.line(surface, RED, (int(tx), int(ty)), (int(tip2[0]), int(tip2[1])), 2)
 
 
 class Apple:
@@ -53,7 +76,15 @@ class Apple:
 
     def draw(self, surface):
         c, r = self.position
-        pygame.draw.rect(surface, RED, (c*CELL, r*CELL, CELL, CELL))
+        cx, cy = c * CELL + CELL // 2, r * CELL + CELL // 2
+        rad = CELL // 2 - 2
+        pygame.draw.circle(surface, (180, 0, 0), (cx, cy), rad + 1)
+        pygame.draw.circle(surface, RED, (cx, cy), rad)
+        pygame.draw.circle(surface, (255, 120, 120), (cx - rad//3, cy - rad//3), rad//3)  # shine
+        # stem
+        pygame.draw.line(surface, (101, 67, 33), (cx, cy - rad), (cx + 2, cy - rad - 4), 2)
+        # leaf
+        pygame.draw.line(surface, (0, 180, 0), (cx + 2, cy - rad - 2), (cx + 6, cy - rad - 5), 2)
 
 
 class Game:
@@ -71,6 +102,7 @@ class Game:
         self.apple = Apple(self.snake.body)
         self.score = 0
         self.over = False
+        self.eating = False
 
     @property
     def level(self):
@@ -103,8 +135,10 @@ class Game:
             self.snake.grow()
             self.score += 1
             self.apple.respawn(self.snake.body)
+            self.eating = True
         else:
             self.snake.move()
+            self.eating = False
 
     def draw(self):
         self.screen.fill(BLACK)
@@ -112,7 +146,7 @@ class Game:
             for r in range(ROWS):
                 pygame.draw.rect(self.screen, GRAY, (c*CELL, r*CELL, CELL, CELL), 1)
         self.apple.draw(self.screen)
-        self.snake.draw(self.screen)
+        self.snake.draw(self.screen, eating=self.eating)
         self.screen.blit(self.font.render(f"Score: {self.score}  Level: {self.level}", True, WHITE), (8, 8))
         if self.over:
             ov = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
