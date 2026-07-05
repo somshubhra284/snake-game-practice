@@ -116,6 +116,15 @@ class Game:
                              self.font.render("R = Restart  Q = Quit", True, GRAY).get_rect(center=(WIDTH//2, HEIGHT//2+55)))
         pygame.display.flip()
 
+    def render(self):
+        grid = [['O'] * COLS for _ in range(ROWS)]
+        grid[self.apple.position[1]][self.apple.position[0]] = '*'
+        for c, r in self.snake.body:
+            grid[r][c] = '#'
+        border = '+' + '-' * COLS + '+'
+        rows = '\n'.join('|' + ''.join(row) + '|' for row in grid)
+        print(f"{border}\n{rows}\n{border}\nScore: {self.score}")
+
     def run(self):
         while True:
             self.handle_input()
