@@ -1,6 +1,7 @@
 import pygame, random, sys
 
-WIDTH, HEIGHT, CELL, FPS = 600, 600, 20, 10
+WIDTH, HEIGHT, CELL = 600, 600, 20
+BASE_FPS, FPS_STEP, MAX_FPS = 6, 2, 20  # level-up every 5 apples
 COLS, ROWS = WIDTH // CELL, HEIGHT // CELL
 BLACK, WHITE, GREEN, RED, GRAY = (0,0,0), (255,255,255), (50,200,50), (220,50,50), (40,40,40)
 UP, DOWN, LEFT, RIGHT = (0,-1), (0,1), (-1,0), (1,0)
@@ -71,6 +72,14 @@ class Game:
         self.score = 0
         self.over = False
 
+    @property
+    def level(self):
+        return self.score // 5 + 1
+
+    @property
+    def fps(self):
+        return min(BASE_FPS + (self.level - 1) * FPS_STEP, MAX_FPS)
+
     def handle_input(self):
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -104,7 +113,7 @@ class Game:
                 pygame.draw.rect(self.screen, GRAY, (c*CELL, r*CELL, CELL, CELL), 1)
         self.apple.draw(self.screen)
         self.snake.draw(self.screen)
-        self.screen.blit(self.font.render(f"Score: {self.score}", True, WHITE), (8, 8))
+        self.screen.blit(self.font.render(f"Score: {self.score}  Level: {self.level}", True, WHITE), (8, 8))
         if self.over:
             ov = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
             ov.fill((0,0,0,160)); self.screen.blit(ov, (0,0))
@@ -130,7 +139,7 @@ class Game:
             self.handle_input()
             self.update()
             self.draw()
-            self.clock.tick(FPS)
+            self.clock.tick(self.fps)
 
 
 def verify():
