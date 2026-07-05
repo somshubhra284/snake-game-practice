@@ -370,23 +370,5 @@ class Game:
             self.draw()
 
 
-def verify():
-    """Step 3: print initial board state without launching pygame."""
-    import os; os.environ["SDL_VIDEODRIVER"] = "dummy"; os.environ["SDL_AUDIODRIVER"] = "dummy"
-    snake = Snake([(COLS//2, ROWS//2)], RIGHT)
-    apple = Apple(snake.body)
-    print(f"Board: {COLS}w x {ROWS}h  |  Snake head: {snake.body[0]}  |  Direction: {snake.direction}")
-    grid = [['O'] * COLS for _ in range(ROWS)]
-    grid[apple.position[1]][apple.position[0]] = '*'
-    grid[snake.body[0][1]][snake.body[0][0]] = '#'
-    border = '+' + '-' * COLS + '+'
-    print(border)
-    for row in grid: print('|' + ''.join(row) + '|')
-    print(border)
-
 if __name__ == "__main__":
-    import sys
-    if "--verify" in sys.argv:
-        verify()
-    else:
-        Game().run()
+    Game().run()
